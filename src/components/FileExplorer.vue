@@ -1,11 +1,11 @@
 
 <template>
   <div style="margin: 20px">
-    <n-card size="huge" title="Watch File Explorer">
+    <n-card size="huge" title="Infinitime File Explorer">
       <n-space vertical>
         <div></div>
         <n-button type="success" v-if="!isConnected" @click="connectDevice">
-          Connect to Watch
+          Connect to Infinitime
         </n-button>
 
         <div v-if="isConnected">
@@ -591,6 +591,30 @@ const createFileListColumns = () => {
           : null;
       },
     },
+    {
+      title: "",
+      key: "actions",
+      render(row) {
+        return row.file != ".."
+          ? useRenderAction([
+              {
+                label: "Download",
+                onClick: () => {
+                  let navPath = row.file;
+                  if (path.value == "/") {
+                    navPath = "/" + navPath;
+                  } else {
+                    navPath = path.value + "/" + navPath;
+                  }
+                  downloadFile(navPath).then(() => {
+                    loadDir(path.value);
+                  });
+                },
+              },
+            ])
+          : null;
+      },
+    },
   ];
 };
 const deviceFileListColumns = createFileListColumns();
@@ -765,7 +789,7 @@ const requestBlE = () => {
   let options = {
     filters: [
       {
-        name: "Watch",
+        name: "InfiniTime",
       },
     ],
     optionalServices: [0xfebb, 0x180a],
@@ -1067,6 +1091,39 @@ const deleteFile = (path) => {
   });
 };
 
+const downloadFile = (path) => {
+  return new Promise((resolve, reject) => {
+    let header = new Uint8Array(4);
+    let size = toBytesInt16(path.length);
+
+    /*
+      Command (single byte): 0x30
+      1 byte of padding
+      Unsigned 16-bit integer encoding the length of the file path.
+      File path: UTF-8 encoded string that is not null terminated.
+
+    */
+    header[0] = 0x30;
+    header[1] = 0x00;
+    header[2] = size[1];
+    header[3] = size[0];
+
+    let value = new Uint8Array([...header, ...new TextEncoder().encode(path)]);
+
+    //console.log(value);
+
+    fileTransfer.value
+      .writeValue(value)
+      .then(function () {
+        //deviceFileList.value = [];
+        resolve();
+      })
+      .catch(function (error) {
+        reject("deleteFile error : " + error);
+      });
+  });
+};
+
 const createFile = (path, fileSize) => {
   return new Promise((resolve, reject) => {
     let header = new Uint8Array(20);
@@ -1078,7 +1135,7 @@ const createFile = (path, fileSize) => {
     1 byte of padding
     Unsigned 16-bit integer encoding the length of the file path.
     Unsigned 32-bit integer encoding the location at which to start writing to the file.
-    Unsigned 64-bit integer encoding the unix timestamp with nanosecond resolution. This will be used as the modification time. At the time of writing, this is not implemented in Watch, but may be in the future.
+    Unsigned 64-bit integer encoding the unix timestamp with nanosecond resolution. This will be used as the modification time. At the time of writing, this is not implemented in InfiniTime, but may be in the future.
     Unsigned 32-bit integer encoding the size of the file that will be sent
     File path: UTF-8 encoded string that is not null terminated.
 

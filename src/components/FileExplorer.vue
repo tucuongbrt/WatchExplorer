@@ -1,11 +1,11 @@
 
 <template>
   <div style="margin: 20px">
-    <n-card size="huge" title="Infinitime File Explorer">
+    <n-card size="huge" title="Watch File Explorer">
       <n-space vertical>
         <div></div>
         <n-button type="success" v-if="!isConnected" @click="connectDevice">
-          Connect to Infinitime
+          Connect to Watch
         </n-button>
 
         <div v-if="isConnected">
@@ -789,7 +789,7 @@ const requestBlE = () => {
   let options = {
     filters: [
       {
-        name: "InfiniTime",
+        name: "Watch",
       },
     ],
     optionalServices: [0xfebb, 0x180a],
@@ -1135,7 +1135,7 @@ const createFile = (path, fileSize) => {
     1 byte of padding
     Unsigned 16-bit integer encoding the length of the file path.
     Unsigned 32-bit integer encoding the location at which to start writing to the file.
-    Unsigned 64-bit integer encoding the unix timestamp with nanosecond resolution. This will be used as the modification time. At the time of writing, this is not implemented in InfiniTime, but may be in the future.
+    Unsigned 64-bit integer encoding the unix timestamp with nanosecond resolution. This will be used as the modification time. At the time of writing, this is not implemented in Watch, but may be in the future.
     Unsigned 32-bit integer encoding the size of the file that will be sent
     File path: UTF-8 encoded string that is not null terminated.
 
